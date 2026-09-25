@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -120,5 +121,137 @@ func TestStartDynamic(t *testing.T) {
 		r := PerformRequest(app, "GET", "/api/strategies/dynamic?group=test")
 		assert.Equal(t, http.StatusInternalServerError, r.Code)
 		assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+	})
+}
+
+// TestStartDynamicNegotiated404 pins the content-negotiated 404 behavior: a
+// browser-like Accept header yields a themed HTML error page, while API clients
+// keep receiving the RFC 7807 JSON problem, and 404 responses carry Vary: Accept.
+func TestStartDynamicNegotiated404(t *testing.T) {
+	const browserAccept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+
+	t.Run("group-not-found serves HTML to browsers", func(t *testing.T) {
+		app, router, strategy, mock := NewApiTest(t)
+		StartDynamic(router, strategy)
+		mock.EXPECT().RequestSessionGroup(gomock.Any(), "unknown", gomock.Any()).Return(nil, sablier.ErrGroupNotFound{
+			Group:           "unknown",
+			AvailableGroups: []string{"nginx"},
+		})
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=unknown", browserAccept)
+		assert.Equal(t, http.StatusNotFound, r.Code)
+		assert.Equal(t, "text/html; charset=utf-8", r.Header().Get("Content-Type"))
+		assert.Assert(t, strings.Contains(r.Body.String(), "Group not found"))
+		assert.Assert(t, strings.Contains(r.Body.String(), "nginx"))
+		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+	})
+
+	t.Run("group-not-found honors multi-line Accept headers", func(t *testing.T) {
+		app, router, strategy, mock := NewApiTest(t)
+		StartDynamic(router, strategy)
+		mock.EXPECT().RequestSessionGroup(gomock.Any(), "unknown", gomock.Any()).Return(nil, sablier.ErrGroupNotFound{
+			Group:           "unknown",
+			AvailableGroups: []string{"nginx"},
+		}).Times(2)
+
+		// Line 1: text/html;q=0.1, Line 2: application/json;q=0.9 -> JSON preferred
+		headers := http.Header{}
+		headers.Add("Accept", "text/html;q=0.1")
+		headers.Add("Accept", "application/json;q=0.9")
+		r := PerformRequestWithHeaders(app, "GET", "/api/strategies/dynamic?group=unknown", headers)
+		assert.Equal(t, http.StatusNotFound, r.Code)
+		assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+
+		// Line 1: application/json;q=0.5, Line 2: text/html;q=0.9 -> HTML preferred
+		headers = http.Header{}
+		headers.Add("Accept", "application/json;q=0.5")
+		headers.Add("Accept", "text/html;q=0.9")
+		r = PerformRequestWithHeaders(app, "GET", "/api/strategies/dynamic?group=unknown", headers)
+		assert.Equal(t, http.StatusNotFound, r.Code)
+		assert.Equal(t, "text/html; charset=utf-8", r.Header().Get("Content-Type"))
+		assert.Assert(t, strings.Contains(r.Body.String(), "Group not found"))
+		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+	})
+
+	t.Run("group-not-found stays JSON for API clients", func(t *testing.T) {
+		app, router, strategy, mock := NewApiTest(t)
+		StartDynamic(router, strategy)
+		mock.EXPECT().RequestSessionGroup(gomock.Any(), "unknown", gomock.Any()).Return(nil, sablier.ErrGroupNotFound{
+			Group:           "unknown",
+			AvailableGroups: []string{"nginx"},
+		})
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=unknown", "application/json")
+		assert.Equal(t, http.StatusNotFound, r.Code)
+		assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+	})
+
+	t.Run("group-not-found stays JSON for wildcard accept", func(t *testing.T) {
+		app, router, strategy, mock := NewApiTest(t)
+		StartDynamic(router, strategy)
+		mock.EXPECT().RequestSessionGroup(gomock.Any(), "unknown", gomock.Any()).Return(nil, sablier.ErrGroupNotFound{
+			Group:           "unknown",
+			AvailableGroups: []string{"nginx"},
+		})
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=unknown", "*/*")
+		assert.Equal(t, http.StatusNotFound, r.Code)
+		assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+	})
+
+	t.Run("theme-not-found serves HTML to browsers", func(t *testing.T) {
+		app, router, strategy, _ := NewApiTest(t)
+		StartDynamic(router, strategy)
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=foo&theme=unknown-theme", browserAccept)
+		assert.Equal(t, http.StatusNotFound, r.Code)
+		assert.Equal(t, "text/html; charset=utf-8", r.Header().Get("Content-Type"))
+		assert.Assert(t, strings.Contains(r.Body.String(), "Theme not found"))
+		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+	})
+
+	t.Run("theme-not-found stays JSON for API clients", func(t *testing.T) {
+		app, router, strategy, _ := NewApiTest(t)
+		StartDynamic(router, strategy)
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=foo&theme=unknown-theme", "application/json")
+		assert.Equal(t, http.StatusNotFound, r.Code)
+		assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+	})
+
+	t.Run("validation error stays JSON for browsers", func(t *testing.T) {
+		app, router, strategy, _ := NewApiTest(t)
+		StartDynamic(router, strategy)
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?timeout=invalid", browserAccept)
+		assert.Equal(t, http.StatusBadRequest, r.Code)
+		assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+		assert.Equal(t, "", r.Header().Get("Vary"))
+	})
+
+	t.Run("internal server error stays JSON for browsers", func(t *testing.T) {
+		app, router, strategy, mock := NewApiTest(t)
+		StartDynamic(router, strategy)
+		mock.EXPECT().RequestSessionGroup(gomock.Any(), "test", gomock.Any()).Return(nil, errors.New("db failure"))
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=test", browserAccept)
+		assert.Equal(t, http.StatusInternalServerError, r.Code)
+		assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+		assert.Equal(t, "", r.Header().Get("Vary"))
+	})
+
+	t.Run("successful response does not set Vary header", func(t *testing.T) {
+		app, router, strategy, mock := NewApiTest(t)
+		StartDynamic(router, strategy)
+		mock.EXPECT().RequestSessionGroup(gomock.Any(), "test", gomock.Any()).Return(session(), nil)
+
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=test", browserAccept)
+		assert.Equal(t, http.StatusOK, r.Code)
+		assert.Assert(t, strings.HasPrefix(r.Header().Get("Content-Type"), "text/html"))
+		assert.Equal(t, "", r.Header().Get("Vary"))
 	})
 }

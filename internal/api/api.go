@@ -22,7 +22,8 @@ type Sablier interface {
 }
 
 type ServeStrategy struct {
-	Theme *theme.Themes
+	Theme      *theme.Themes
+	ErrorTheme *theme.ErrorThemes
 
 	Sablier        Sablier
 	Metrics        metrics.Recorder

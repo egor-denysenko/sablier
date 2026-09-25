@@ -20,12 +20,15 @@ func NewApiTest(t *testing.T) (app *gin.Engine, router *gin.RouterGroup, strateg
 	ctrl := gomock.NewController(t)
 	th, err := theme.New(slogt.New(t))
 	assert.NilError(t, err)
+	eth, err := theme.NewErrorThemes(slogt.New(t))
+	assert.NilError(t, err)
 
 	app = gin.New()
 	router = app.Group("/api")
 	mock = apitest.NewMockSablier(ctrl)
 	strategy = &ServeStrategy{
 		Theme:          th,
+		ErrorTheme:     eth,
 		Sablier:        mock,
 		Metrics:        metrics.Noop{},
 		StrategyConfig: config2.NewStrategyConfig(),
@@ -37,7 +40,25 @@ func NewApiTest(t *testing.T) (app *gin.Engine, router *gin.RouterGroup, strateg
 
 // PerformRequest runs an API request with an empty request body.
 func PerformRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
+	return PerformRequestWithAccept(r, method, path, "")
+}
+
+// PerformRequestWithAccept runs an API request with an empty request body and
+// the given Accept header value.
+func PerformRequestWithAccept(r http.Handler, method, path, accept string) *httptest.ResponseRecorder {
+	headers := http.Header{}
+	if accept != "" {
+		headers.Set("Accept", accept)
+	}
+	return PerformRequestWithHeaders(r, method, path, headers)
+}
+
+// PerformRequestWithHeaders runs an API request with the provided HTTP headers.
+func PerformRequestWithHeaders(r http.Handler, method, path string, headers http.Header) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest(method, path, nil)
+	if headers != nil {
+		req.Header = headers
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 

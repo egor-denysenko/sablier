@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Sablier</title>
+    <style>
+        html, body {
+            margin: 0;
+            height: 100vh;
+            background-color: #222;
+            color: #aaa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .flex-center {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            max-width: 620px;
+            padding: 48px;
+            text-align: center;
+        }
+
+        .status {
+            font-size: 64px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .status-text {
+            font-size: 18px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: .5em 0 0;
+        }
+
+        .title {
+            font-size: 22px;
+            margin: 1.5em 0 .5em;
+            color: #eee;
+        }
+
+        .detail {
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 1.5em;
+        }
+
+        .suggestions {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font-family: 'Lucida Console', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .suggestions li {
+            padding: .3em 0;
+        }
+
+        .suggestions code {
+            color: #e8e8e8;
+        }
+
+        .version {
+            margin-top: 2.5em;
+            font-size: 11px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="flex-center">
+    <div class="card">
+        <p class="status">{{ .StatusCode }}</p>
+        <p class="status-text">{{ .StatusText }}</p>
+        <h1 class="title">{{ .Title }}</h1>
+        {{- if .Detail }}
+        <p class="detail">{{ .Detail }}</p>
+        {{- end }}
+        {{- if .RequestedGroup }}
+        <p class="detail">Requested group: <code>{{ .RequestedGroup }}</code></p>
+        {{- end }}
+        {{- if .RequestedTheme }}
+        <p class="detail">Requested theme: <code>{{ .RequestedTheme }}</code></p>
+        {{- end }}
+        {{- if .AvailableGroups }}
+        <p class="detail">Available groups:</p>
+        <ul class="suggestions">
+            {{- range $i, $group := .AvailableGroups }}
+            <li><code>{{ $group }}</code></li>
+            {{- end }}
+        </ul>
+        {{- end }}
+        {{- if .AvailableThemes }}
+        <p class="detail">Available themes:</p>
+        <ul class="suggestions">
+            {{- range $i, $theme := .AvailableThemes }}
+            <li><code>{{ $theme }}</code></li>
+            {{- end }}
+        </ul>
+        {{- end }}
+        <p class="version">Sablier {{ .Version }}</p>
+    </div>
+</div>
+</body>
+</html>

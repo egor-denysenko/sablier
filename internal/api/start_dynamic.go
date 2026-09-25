@@ -71,10 +71,10 @@ func StartDynamic(router *gin.RouterGroup, s *ServeStrategy) {
 		// request that can only ever return 404 (and would start them again on
 		// every retry).
 		if !s.Theme.Exists(request.Theme) {
-			AbortWithProblemDetail(c, ProblemThemeNotFound(theme.ErrThemeNotFound{
+			AbortDynamicThemeNotFound(c, s, theme.ErrThemeNotFound{
 				Theme:           request.Theme,
 				AvailableThemes: s.Theme.List(),
-			}))
+			})
 			return
 		}
 
@@ -91,7 +91,7 @@ func StartDynamic(router *gin.RouterGroup, s *ServeStrategy) {
 		} else {
 			sessionState, err = s.Sablier.RequestSessionGroup(c.Request.Context(), request.Group, request.SessionDuration)
 			if groupNotFoundError, ok := errors.AsType[sablier.ErrGroupNotFound](err); ok {
-				AbortWithProblemDetail(c, ProblemGroupNotFound(groupNotFoundError))
+				AbortDynamicGroupNotFound(c, s, request.Theme, groupNotFoundError)
 				return
 			}
 		}
@@ -123,7 +123,7 @@ func StartDynamic(router *gin.RouterGroup, s *ServeStrategy) {
 		buf := new(bytes.Buffer)
 		err = s.Theme.Render(request.Theme, renderOptions, buf)
 		if themeNotFound, ok := errors.AsType[theme.ErrThemeNotFound](err); ok {
-			AbortWithProblemDetail(c, ProblemThemeNotFound(themeNotFound))
+			AbortDynamicThemeNotFound(c, s, themeNotFound)
 			return
 		}
 		if err != nil {
@@ -135,7 +135,7 @@ func StartDynamic(router *gin.RouterGroup, s *ServeStrategy) {
 		c.Header("Content-Type", "text/html")
 		c.Header("Content-Length", strconv.Itoa(buf.Len()))
 		if _, err := c.Writer.Write(buf.Bytes()); err != nil {
-			AbortWithProblemDetail(c, ProblemError(err))
+			_ = c.Error(err)
 			return
 		}
 	})
