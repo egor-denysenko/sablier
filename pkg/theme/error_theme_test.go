@@ -31,6 +31,23 @@ func TestErrorThemes_Render(t *testing.T) {
 		assert.Assert(t, strings.Contains(buf.String(), "missing"))
 	})
 
+	t.Run("ghost error page displays the missing group", func(t *testing.T) {
+		themes, err := theme.NewErrorThemes(slogt.New(t))
+		assert.NilError(t, err)
+
+		buf := new(bytes.Buffer)
+		err = themes.Render("ghost", theme.ErrorOptions{
+			StatusCode:      404,
+			Title:           "Group not found",
+			RequestedGroup:  "<missing>",
+			AvailableGroups: []string{"nginx"},
+		}, buf)
+		assert.NilError(t, err)
+		assert.Assert(t, strings.Contains(buf.String(), "Requested group:"))
+		assert.Assert(t, strings.Contains(buf.String(), "&lt;missing&gt;"))
+		assert.Assert(t, strings.Contains(buf.String(), "nginx"))
+	})
+
 	t.Run("per-theme override for embedded themes", func(t *testing.T) {
 		themes, err := theme.NewErrorThemes(slogt.New(t))
 		assert.NilError(t, err)

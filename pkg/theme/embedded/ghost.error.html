@@ -35,6 +35,12 @@
         {{- if .Detail }}
         <p class="description">{{ .Detail }}</p>
         {{- end }}
+        {{- if .RequestedGroup }}
+        <p class="description">Requested group: <code>{{ .RequestedGroup }}</code></p>
+        {{- end }}
+        {{- if .RequestedTheme }}
+        <p class="description">Requested theme: <code>{{ .RequestedTheme }}</code></p>
+        {{- end }}
         <div class="details">
             <ul>
             {{- if .AvailableGroups }}
