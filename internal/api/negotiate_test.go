@@ -2,11 +2,6 @@ package api
 
 import "testing"
 
-var (
-	testHTMLFamily = []string{"text/html", "application/xhtml+xml"}
-	testJSONFamily = []string{"application/json", "application/problem+json"}
-)
-
 func TestPrefers(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -59,9 +54,19 @@ func TestPrefers(t *testing.T) {
 			want:   false,
 		},
 		{
-			name:   "xhtml only",
+			name:   "xhtml only keeps JSON fallback",
 			accept: "application/xhtml+xml",
-			want:   true,
+			want:   false,
+		},
+		{
+			name:   "xhtml does not override explicit HTML refusal",
+			accept: "text/html;q=0,application/xhtml+xml;q=1,application/json;q=0.5",
+			want:   false,
+		},
+		{
+			name:   "xhtml does not raise HTML quality",
+			accept: "text/html;q=0.1,application/xhtml+xml;q=1,application/json;q=0.5",
+			want:   false,
 		},
 		{
 			name:   "invalid html quality is ignored",
@@ -87,7 +92,7 @@ func TestPrefers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := prefers(tt.accept, testHTMLFamily, testJSONFamily)
+			got := prefers(tt.accept, htmlFamily, jsonFamily)
 			if got != tt.want {
 				t.Errorf("prefers(%q) = %v, want %v", tt.accept, got, tt.want)
 			}

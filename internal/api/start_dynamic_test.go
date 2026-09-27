@@ -138,13 +138,35 @@ func TestStartDynamicNegotiated404(t *testing.T) {
 			AvailableGroups: []string{"nginx"},
 		})
 
-		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=unknown", browserAccept)
+		r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=unknown&theme=ghost", browserAccept)
 		assert.Equal(t, http.StatusNotFound, r.Code)
 		assert.Equal(t, "text/html; charset=utf-8", r.Header().Get("Content-Type"))
 		assert.Assert(t, strings.Contains(r.Body.String(), "Group not found"))
+		assert.Assert(t, strings.Contains(r.Body.String(), `class="ghost"`))
 		assert.Assert(t, strings.Contains(r.Body.String(), "nginx"))
 		assert.Equal(t, "Accept", r.Header().Get("Vary"))
+		assert.Equal(t, "no-cache", r.Header().Get("Cache-Control"))
+		assert.Equal(t, "", r.Header().Get("X-Sablier-Session-Status"))
 	})
+
+	for _, accept := range []string{
+		"application/xhtml+xml",
+		"text/html;q=0,application/xhtml+xml;q=1,application/json;q=0.5",
+		"text/html;q=0.1,application/xhtml+xml;q=1,application/json;q=0.5",
+	} {
+		t.Run("unsupported XHTML does not select HTML/"+accept, func(t *testing.T) {
+			app, router, strategy, mock := NewApiTest(t)
+			StartDynamic(router, strategy)
+			mock.EXPECT().RequestSessionGroup(gomock.Any(), "unknown", gomock.Any()).Return(nil, sablier.ErrGroupNotFound{
+				Group: "unknown",
+			})
+
+			r := PerformRequestWithAccept(app, "GET", "/api/strategies/dynamic?group=unknown", accept)
+			assert.Equal(t, http.StatusNotFound, r.Code)
+			assert.Equal(t, rfc7807.JSONMediaType, r.Header().Get("Content-Type"))
+			assert.Equal(t, "Accept", r.Header().Get("Vary"))
+		})
+	}
 
 	t.Run("group-not-found honors multi-line Accept headers", func(t *testing.T) {
 		app, router, strategy, mock := NewApiTest(t)

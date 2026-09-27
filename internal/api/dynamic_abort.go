@@ -12,10 +12,10 @@ import (
 	"github.com/tniswong/go.rfcx/rfc7807"
 )
 
-// htmlFamily and jsonFamily are the media types the dynamic strategy can
-// produce for an error: a themed HTML page or an RFC 7807 JSON problem.
+// HTML is emitted as text/html, not XHTML. Keep application/json as a
+// compatibility alias for clients requesting an RFC 7807 JSON problem.
 var (
-	htmlFamily = []string{"text/html", "application/xhtml+xml"}
+	htmlFamily = []string{"text/html"}
 	jsonFamily = []string{"application/json", "application/problem+json"}
 )
 
