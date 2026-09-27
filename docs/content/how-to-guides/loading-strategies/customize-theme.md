@@ -6,7 +6,7 @@ aliases:
   - /themes/
 ---
 
-This guide shows you how to customize the waiting page shown while an instance starts.
+Customize the waiting page shown while an instance starts, or the error page for a missing group or theme.
 
 ```yaml
 services:
@@ -44,7 +44,7 @@ only when you want Sablier to look somewhere else.
 If the folder does not exist, Sablier serves the embedded themes and says so at `debug` level,
 so leaving the default in place costs nothing when you have no custom themes.
 
-Sablier will recursively search for themes with the `.html` extension.
+Sablier will recursively search for themes with the `.html` extension. Error templates use the same directory and asset bundling rules as loading themes.
 
 - You **cannot** load new themes added to the folder without restarting
 - You **can** modify existing theme files without restarting
@@ -132,6 +132,61 @@ The first step to creating your own theme is to include the `HTML <meta> http-eq
   ...
 </head>
 ```
+
+## Customize dynamic error pages
+
+The dynamic strategy can show an HTML page when a group or theme is missing. It uses the selected theme's error template: `ghost`, for example, uses `ghost.error.html`. To customize yours, add a matching file in Sablier's custom themes directory:
+
+```text
+/path/to/my/themes/
+├── my-theme.html         # waiting page: theme=my-theme
+└── my-theme.error.html   # error page for theme=my-theme
+```
+
+This also works in subdirectories. If the theme or its error template is missing, Sablier uses `error.html`. Add your own `error.html` to replace that fallback. Error templates don't appear in `/api/themes` and can't be selected as waiting pages.
+
+For example, `my-theme.error.html` can contain:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>{{ .Title }}</title></head>
+<body>
+  <h1>{{ .StatusCode }} {{ .StatusText }}</h1>
+  <p>{{ .Detail }}</p>
+  {{- if .RequestedGroup }}<p>Requested group: {{ .RequestedGroup }}</p>{{ end }}
+  {{- if .AvailableGroups }}
+  <p>Available groups:</p>
+  <ul>{{ range .AvailableGroups }}<li>{{ . }}</li>{{ end }}</ul>
+  {{- end }}
+</body>
+</html>
+```
+
+Templates use [Go `html/template`](https://pkg.go.dev/html/template), which escapes values automatically. Available fields are:
+
+- `.StatusCode`, `.StatusText`, `.Title`, `.Detail`, `.Version`
+- `.RequestedGroup`, `.AvailableGroups` for a missing group
+- `.RequestedTheme`, `.AvailableThemes` for a missing theme
+
+Waiting-page fields such as `.DisplayName` and `.RefreshFrequency` aren't available. Leave out the auto-refresh tag: retrying won't fix a missing group or theme.
+
+Sablier returns HTML when `Accept` prefers `text/html` to JSON. Otherwise it keeps the JSON response, including for missing headers, `*/*`, ties, or XHTML-only requests. Validation and internal errors still return JSON.
+
+Try both formats with a nonexistent group:
+
+```bash
+curl -i -H 'Accept: text/html' 'http://localhost:10000/api/strategies/dynamic?group=does-not-exist&theme=ghost'
+curl -i -H 'Accept: application/problem+json' 'http://localhost:10000/api/strategies/dynamic?group=does-not-exist&theme=ghost'
+```
+
+Both return 404 with `Vary: Accept`: the first as HTML, the second as `application/problem+json`.
+
+### Using a reverse proxy
+
+The plugin must forward the browser's `Accept` header to Sablier and relay the error status, content type, body, and cache headers back to the browser. Selecting a theme alone isn't enough.
+
+Caddy, Traefik, and Proxy-Wasm need companion plugin changes for this feature; updating Sablier alone won't enable it. Check your plugin's support, then repeat the requests above against your application URL. You should get the same 404 and content type, without the request reaching the backend.
 
 ## The `showDetails` option
 

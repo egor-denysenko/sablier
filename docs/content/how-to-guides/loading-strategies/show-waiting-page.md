@@ -40,7 +40,7 @@ The strategy is chosen in your reverse-proxy plugin configuration, not on the Sa
 - `display_name`: the name shown on the waiting page.
 - Refresh and theme options let you control how often the page reloads and how it looks.
 
-To change the look of the page, pick a built-in theme or provide your own; see [Customize the theme](/how-to-guides/loading-strategies/customize-theme/). See the [themes example](https://github.com/sablierapp/sablier/tree/main/examples/custom-theme).
+To change the look of the waiting page or its matching error page, pick a built-in theme or provide your own; see [Customize the theme](/how-to-guides/loading-strategies/customize-theme/). See the [themes example](https://github.com/sablierapp/sablier/tree/main/examples/custom-theme).
 
 ## Related
 
