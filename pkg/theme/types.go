@@ -35,6 +35,18 @@ type Options struct {
 	RefreshFrequency time.Duration
 }
 
+// ErrorOptions holds the customizable input to an error-page template.
+type ErrorOptions struct {
+	StatusCode      int
+	StatusText      string
+	Title           string
+	Detail          string
+	RequestedGroup  string
+	AvailableGroups []string
+	RequestedTheme  string
+	AvailableThemes []string
+}
+
 // TemplateData is the data passed to a theme template when rendering a loading page.
 // All fields listed here are available as template variables (e.g. {{.DisplayName}}).
 type TemplateData struct {
@@ -43,4 +55,10 @@ type TemplateData struct {
 	SessionDuration  string     `jsonschema:"description=Human-readable remaining session duration (e.g. '1 hour 30 minutes').,example=1 hour 30 minutes"`
 	RefreshFrequency string     `jsonschema:"description=Page auto-refresh interval in whole seconds as a string (e.g. '30').,example=5"`
 	Version          string     `jsonschema:"description=Current Sablier server version string (e.g. '1.8.0').,example=1.8.0"`
+}
+
+// ErrorTemplateData is the data passed to an error-page template `<name>.error.html` file.
+type ErrorTemplateData struct {
+	ErrorOptions
+	Version string
 }

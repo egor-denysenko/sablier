@@ -3,16 +3,17 @@ package theme_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/neilotoole/slogt"
-	"github.com/sablierapp/sablier/pkg/theme"
-	"github.com/sablierapp/sablier/pkg/version"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"os"
 	"testing"
 	"testing/fstest"
 	"time"
+
+	"github.com/neilotoole/slogt"
+	"github.com/sablierapp/sablier/pkg/theme"
+	"github.com/sablierapp/sablier/pkg/version"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -65,7 +66,11 @@ func TestThemes_Render(t *testing.T) {
 </body>
 </html>
 `
+	origVersion := version.Version
 	version.Version = "1.0.0"
+	t.Cleanup(func() {
+		version.Version = origVersion
+	})
 	themes, err := theme.NewWithCustomThemes(fstest.MapFS{
 		"inner/custom-theme.html": &fstest.MapFile{Data: []byte(customTheme)},
 	}, slogt.New(t))
@@ -176,7 +181,11 @@ func TestThemes_Render(t *testing.T) {
 // block ever runs, so a broken row, error branch or status comparison in a
 // built-in theme goes unnoticed there.
 func TestThemes_RenderEmbeddedWithDetails(t *testing.T) {
+	origVersion := version.Version
 	version.Version = "1.0.0"
+	t.Cleanup(func() {
+		version.Version = origVersion
+	})
 	themes, err := theme.New(slogt.New(t))
 	require.NoError(t, err)
 
@@ -232,7 +241,11 @@ func ExampleThemes_Render() {
 	</body>
 </html>
 `
+	origVersion := version.Version
 	version.Version = "1.0.0"
+	defer func() {
+		version.Version = origVersion
+	}()
 	themes, err := theme.NewWithCustomThemes(fstest.MapFS{
 		"inner/custom-theme.html": &fstest.MapFile{Data: []byte(customTheme)},
 	}, slog.Default())

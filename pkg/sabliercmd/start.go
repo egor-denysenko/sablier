@@ -178,8 +178,11 @@ func Start(ctx context.Context, conf config.Config) error {
 		return fmt.Errorf("cannot setup theme: %w", err)
 	}
 
+	et := t.ErrorThemes()
+
 	strategy := &api.ServeStrategy{
 		Theme:          t,
+		ErrorTheme:     et,
 		Sablier:        s,
 		Metrics:        rec,
 		StrategyConfig: conf.Strategy,

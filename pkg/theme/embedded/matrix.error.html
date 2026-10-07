@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Sablier</title>
+    <style>
+        :root{--matrix-glyph-tail-color:#0f0}
+        body,html{margin:0;padding:0;background-color:#000;height:100vh;font-family:Inconsolata,Helvetica,sans-serif}
+        .container{align-items:center;display:flex;justify-content:center;position:absolute;top:0;left:0;width:100vw;height:100vh}
+        .container .message{background-color:rgba(0,0,0,.85);border:2px solid #A5524C;padding:15px 20px;margin:0 20px;text-align:center;font-size:0;color:var(--matrix-glyph-tail-color);text-shadow:1px 0 2px var(--matrix-glyph-tail-color),-1px 0 2px var(--matrix-glyph-tail-color);box-shadow:1px 0 5px #A5524C,-1px 0 2px #A5524C;max-width:640px}
+        .container .message h1{margin:0;font-size:52px;color:#A5524C;text-shadow:1px 0 2px #b44038,-1px 0 2px #b44038}
+        .container .message p{margin:.3em 0 0 0;font-size:17px;color:var(--matrix-glyph-front-color,#fff)}
+        .container .message .status{font-size:64px;margin:0;color:#A5524C;text-shadow:1px 0 2px #b44038,-1px 0 2px #b44038}
+        .container .details{margin-top:20px}
+        .container .details ul{padding:0;margin:0}
+        .container .details code,.container .details span{font-size:11px}
+        .container .details code{padding-left:7px;color:var(--matrix-glyph-front-color,#fff)}
+        @media screen and (max-width:820px){
+            .container .message h1{font-size:38px}
+            .container .message p{font-size:13px}
+            .container .details code,.container .details span{font-size:11px}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="message">
+        <p class="status">{{ .StatusCode }} {{ .StatusText }}</p>
+        <h1>{{ .Title }}</h1>
+        {{- if .Detail }}
+        <p>{{ .Detail }}</p>
+        {{- end }}
+        <div class="details">
+            <ul>
+            {{- if .AvailableGroups }}
+                {{- range $i, $group := .AvailableGroups }}
+                <li><span>group:</span><code>{{ $group }}</code></li>
+                {{- end }}
+            {{- end }}
+            {{- if .AvailableThemes }}
+                {{- range $i, $theme := .AvailableThemes }}
+                <li><span>theme:</span><code>{{ $theme }}</code></li>
+                {{- end }}
+            {{- end }}
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>
