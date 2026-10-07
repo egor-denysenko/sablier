@@ -14,6 +14,7 @@
         .container .message h1{margin:0;font-size:52px;color:#A5524C;text-shadow:1px 0 2px #b44038,-1px 0 2px #b44038}
         .container .message p{margin:.3em 0 0 0;font-size:17px;color:var(--matrix-glyph-front-color,#fff)}
         .container .message .status{font-size:64px;margin:0;color:#A5524C;text-shadow:1px 0 2px #b44038,-1px 0 2px #b44038}
+        .container .message code{color:var(--matrix-glyph-front-color,#fff)}
         .container .details{margin-top:20px}
         .container .details ul{padding:0;margin:0}
         .container .details code,.container .details span{font-size:11px}
@@ -32,6 +33,12 @@
         <h1>{{ .Title }}</h1>
         {{- if .Detail }}
         <p>{{ .Detail }}</p>
+        {{- end }}
+        {{- if .RequestedGroup }}
+        <p>Requested group: <code>{{ .RequestedGroup }}</code></p>
+        {{- end }}
+        {{- if .RequestedTheme }}
+        <p>Requested theme: <code>{{ .RequestedTheme }}</code></p>
         {{- end }}
         <div class="details">
             <ul>

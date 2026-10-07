@@ -110,6 +110,12 @@
     {{- if .Detail }}
     <p class="output"><span>{{ .Detail }}</span></p>
     {{- end }}
+    {{- if .RequestedGroup }}
+    <p class="output"><span>Requested group: <code>{{ .RequestedGroup }}</code></span></p>
+    {{- end }}
+    {{- if .RequestedTheme }}
+    <p class="output"><span>Requested theme: <code>{{ .RequestedTheme }}</code></span></p>
+    {{- end }}
     {{- if .AvailableGroups }}
     <div class="details">
         <p class="output small command"><span>available groups</span></p>

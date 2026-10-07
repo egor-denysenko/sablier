@@ -59,6 +59,10 @@
             color: #999;
         }
 
+        .detail code, .suggestions code {
+            color: #e8e8e8;
+        }
+
         .suggestions {
             margin: 0;
             padding: 0;
@@ -69,16 +73,6 @@
         .suggestions li {
             padding: .3em 0;
             color: #999;
-        }
-
-        .suggestions code {
-            color: #e8e8e8;
-        }
-
-        .version {
-            margin-top: 2.5em;
-            font-size: 11px;
-            color: #666;
         }
     </style>
 </head>
@@ -92,6 +86,12 @@
         </div>
         {{- if .Detail }}
         <p class="detail">{{ .Detail }}</p>
+        {{- end }}
+        {{- if .RequestedGroup }}
+        <p class="detail">Requested group: <code>{{ .RequestedGroup }}</code></p>
+        {{- end }}
+        {{- if .RequestedTheme }}
+        <p class="detail">Requested theme: <code>{{ .RequestedTheme }}</code></p>
         {{- end }}
         {{- if .AvailableGroups }}
         <p class="detail">Available groups:</p>
@@ -109,7 +109,6 @@
             {{- end }}
         </ul>
         {{- end }}
-        <p class="version">Sablier {{ .Version }}</p>
     </div>
 </div>
 </body>
