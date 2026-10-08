@@ -13,10 +13,12 @@
         @keyframes float { 50% {transform:translate(0,20px)}}
         h1 {font-size:34px;text-transform:uppercase;margin:1em auto .3em;color:#e7583f}
         .status {font-size:64px;margin:0;color:#e7583f}
-        .description {font-size:13px;color:#aaa;line-height:1.6;margin:.5em auto 1.5em}
+        .description {font-size:14px;color:#aaa;line-height:1.6;margin:.5em auto 1.5em}
+        .description code {color:#fff;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-family:'Lucida Console','Courier New',monospace;font-size:13px}
+        .section-title {font-size:13px;color:#888;margin:1.5em 0 .5em;text-transform:uppercase;letter-spacing:1px}
         .details {color:#999}
-        .details ul {list-style:none;padding:0;margin:0}
-        .details li {font-family:'Lucida Console','Courier New',monospace;font-size:11px;padding:.3em 0}
+        .details ul {list-style:disc;padding:0 0 0 1.5em;margin:0 auto;display:inline-block;text-align:left}
+        .details li {font-family:'Lucida Console','Courier New',monospace;font-size:12px;padding:.25em 0;color:#e7583f}
         .details code {color:#e8e8e8}
     </style>
 </head>
@@ -31,29 +33,35 @@
         </svg>
         <p class="status">{{ .StatusCode }}</p>
         <h1>{{ .Title }}</h1>
-        {{- if .Detail }}
-        <p class="description">{{ .Detail }}</p>
-        {{- end }}
         {{- if .RequestedGroup }}
-        <p class="description">Requested group: <code>{{ .RequestedGroup }}</code></p>
+        <p class="description">You requested the group: <code>{{ .RequestedGroup }}</code></p>
         {{- end }}
         {{- if .RequestedTheme }}
-        <p class="description">Requested theme: <code>{{ .RequestedTheme }}</code></p>
+        <p class="description">You requested the theme: <code>{{ .RequestedTheme }}</code></p>
         {{- end }}
+        {{- if and (not .RequestedGroup) (not .RequestedTheme) .Detail }}
+        <p class="description">{{ .Detail }}</p>
+        {{- end }}
+        {{- if .AvailableGroups }}
         <div class="details">
+            <p class="section-title">Available groups:</p>
             <ul>
-            {{- if .AvailableGroups }}
                 {{- range $i, $group := .AvailableGroups }}
-                <li>group: <code>{{ $group }}</code></li>
+                <li><code>{{ $group }}</code></li>
                 {{- end }}
-            {{- end }}
-            {{- if .AvailableThemes }}
-                {{- range $i, $theme := .AvailableThemes }}
-                <li>theme: <code>{{ $theme }}</code></li>
-                {{- end }}
-            {{- end }}
             </ul>
         </div>
+        {{- end }}
+        {{- if .AvailableThemes }}
+        <div class="details">
+            <p class="section-title">Available themes:</p>
+            <ul>
+                {{- range $i, $theme := .AvailableThemes }}
+                <li><code>{{ $theme }}</code></li>
+                {{- end }}
+            </ul>
+        </div>
+        {{- end }}
     </div>
 </div>
 </body>

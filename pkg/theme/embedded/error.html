@@ -57,8 +57,10 @@
 
         .suggestions {
             margin: 0;
-            padding: 0;
-            list-style: none;
+            padding: 0 0 0 1.5em;
+            list-style: disc;
+            display: inline-block;
+            text-align: left;
             font-family: 'Lucida Console', 'Courier New', monospace;
             font-size: 13px;
         }
@@ -78,14 +80,14 @@
         <p class="status">{{ .StatusCode }}</p>
         <p class="status-text">{{ .StatusText }}</p>
         <h1 class="title">{{ .Title }}</h1>
-        {{- if .Detail }}
-        <p class="detail">{{ .Detail }}</p>
-        {{- end }}
         {{- if .RequestedGroup }}
-        <p class="detail">Requested group: <code>{{ .RequestedGroup }}</code></p>
+        <p class="detail">You requested the group: <code>{{ .RequestedGroup }}</code></p>
         {{- end }}
         {{- if .RequestedTheme }}
-        <p class="detail">Requested theme: <code>{{ .RequestedTheme }}</code></p>
+        <p class="detail">You requested the theme: <code>{{ .RequestedTheme }}</code></p>
+        {{- end }}
+        {{- if and (not .RequestedGroup) (not .RequestedTheme) .Detail }}
+        <p class="detail">{{ .Detail }}</p>
         {{- end }}
         {{- if .AvailableGroups }}
         <p class="detail">Available groups:</p>

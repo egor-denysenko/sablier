@@ -16,7 +16,7 @@
         .container .message .status{font-size:64px;margin:0;color:#A5524C;text-shadow:1px 0 2px #b44038,-1px 0 2px #b44038}
         .container .message code{color:var(--matrix-glyph-front-color,#fff)}
         .container .details{margin-top:20px}
-        .container .details ul{padding:0;margin:0}
+        .container .details ul{padding:0 0 0 1.5em;margin:0 auto;display:inline-block;text-align:left;list-style:disc}
         .container .details code,.container .details span{font-size:11px}
         .container .details code{padding-left:7px;color:var(--matrix-glyph-front-color,#fff)}
         @media screen and (max-width:820px){
@@ -31,28 +31,32 @@
     <div class="message">
         <p class="status">{{ .StatusCode }} {{ .StatusText }}</p>
         <h1>{{ .Title }}</h1>
-        {{- if .Detail }}
-        <p>{{ .Detail }}</p>
-        {{- end }}
         {{- if .RequestedGroup }}
-        <p>Requested group: <code>{{ .RequestedGroup }}</code></p>
+        <p>You requested the group: <code>{{ .RequestedGroup }}</code></p>
         {{- end }}
         {{- if .RequestedTheme }}
-        <p>Requested theme: <code>{{ .RequestedTheme }}</code></p>
+        <p>You requested the theme: <code>{{ .RequestedTheme }}</code></p>
+        {{- end }}
+        {{- if and (not .RequestedGroup) (not .RequestedTheme) .Detail }}
+        <p>{{ .Detail }}</p>
         {{- end }}
         <div class="details">
-            <ul>
             {{- if .AvailableGroups }}
+            <p>Available groups:</p>
+            <ul>
                 {{- range $i, $group := .AvailableGroups }}
-                <li><span>group:</span><code>{{ $group }}</code></li>
+                <li><code>{{ $group }}</code></li>
                 {{- end }}
+            </ul>
             {{- end }}
             {{- if .AvailableThemes }}
+            <p>Available themes:</p>
+            <ul>
                 {{- range $i, $theme := .AvailableThemes }}
-                <li><span>theme:</span><code>{{ $theme }}</code></li>
+                <li><code>{{ $theme }}</code></li>
                 {{- end }}
-            {{- end }}
             </ul>
+            {{- end }}
         </div>
     </div>
 </div>
