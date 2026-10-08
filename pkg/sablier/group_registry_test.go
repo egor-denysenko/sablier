@@ -2,6 +2,7 @@ package sablier
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 )
 
@@ -80,5 +81,25 @@ func TestGroupRegistry_SetCopiesInput(t *testing.T) {
 	names, ok := r.Get("g")
 	if !ok || names[0] != "a" {
 		t.Fatalf("registry state mutated through Set's input: %v (found=%v)", names, ok)
+	}
+}
+
+// TestGroupRegistry_KeysAreSorted verifies that Keys() always returns a deterministically
+// sorted slice of group names regardless of map iteration order.
+func TestGroupRegistry_KeysAreSorted(t *testing.T) {
+	t.Parallel()
+
+	r := newGroupRegistry()
+	r.Set(map[string][]string{
+		"zebra":  {"app1"},
+		"alpha":  {"app2"},
+		"middle": {"app3"},
+		"beta":   {"app4"},
+	})
+
+	keys := r.Keys()
+	expected := []string{"alpha", "beta", "middle", "zebra"}
+	if !slices.Equal(keys, expected) {
+		t.Fatalf("expected keys %v, got %v", expected, keys)
 	}
 }

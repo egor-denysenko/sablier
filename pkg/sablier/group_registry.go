@@ -78,11 +78,13 @@ func (r *groupRegistry) Get(group string) ([]string, bool) {
 	return out, true
 }
 
-// Keys returns a snapshot of all current group names.
+// Keys returns a snapshot of all current group names, sorted in ascending order.
 func (r *groupRegistry) Keys() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	return slices.Collect(maps.Keys(r.data))
+	keys := slices.Collect(maps.Keys(r.data))
+	slices.Sort(keys)
+	return keys
 }
 
 // GroupsOf returns all groups the named instance currently belongs to.
@@ -169,11 +171,10 @@ func (r *groupRegistry) removeFromGroup(instance, group string) {
 	}
 }
 
-// stringSet converts a string slice into a set map for O(1) lookup.
-func stringSet(ss []string) map[string]bool {
-	m := make(map[string]bool, len(ss))
-	for _, s := range ss {
-		m[s] = true
+func stringSet(s []string) map[string]bool {
+	m := make(map[string]bool, len(s))
+	for _, v := range s {
+		m[v] = true
 	}
 	return m
 }

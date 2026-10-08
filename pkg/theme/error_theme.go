@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/sablierapp/sablier/pkg/version"
 )
@@ -74,6 +75,15 @@ func (et *ErrorThemes) ParseAndBundleTemplatesFS(f fs.FS) error {
 // a <name>.error.html template it is used; otherwise the built-in error.html
 // fallback is rendered.
 func (et *ErrorThemes) Render(name string, opts ErrorOptions, writer io.Writer) error {
+	if !slices.IsSorted(opts.AvailableGroups) {
+		opts.AvailableGroups = slices.Clone(opts.AvailableGroups)
+		slices.Sort(opts.AvailableGroups)
+	}
+	if !slices.IsSorted(opts.AvailableThemes) {
+		opts.AvailableThemes = slices.Clone(opts.AvailableThemes)
+		slices.Sort(opts.AvailableThemes)
+	}
+
 	options := ErrorTemplateData{
 		ErrorOptions: opts,
 		Version:      version.Version,
