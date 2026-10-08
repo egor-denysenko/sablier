@@ -8,7 +8,7 @@
     <style>
         html,body {background-color:#1a1a1a;color:#fff;font-family:'Open Sans',sans-serif;height:100vh;margin:0}
         .container {height:100vh;align-items:center;display:flex;justify-content:center}
-        .wrap {text-align:center;max-width:620px;padding:24px}
+        .wrap {text-align:center;max-width:720px;padding:24px}
         .ghost {animation:float 3s ease-out infinite;opacity:.9}
         @keyframes float { 50% {transform:translate(0,20px)}}
         h1 {font-size:34px;text-transform:uppercase;margin:1em auto .3em;color:#e7583f}
@@ -18,8 +18,11 @@
         .section-title {font-size:13px;color:#888;margin:1.5em 0 .5em;text-transform:uppercase;letter-spacing:1px}
         .details {color:#999}
         .details ul {list-style:disc;padding:0 0 0 1.5em;margin:0 auto;display:inline-block;text-align:left}
-        .details li {font-family:'Lucida Console','Courier New',monospace;font-size:12px;padding:.25em 0;color:#e7583f}
+        .details ul.cols-2 {columns:2;column-gap:36px}
+        .details ul.cols-3 {columns:3;column-gap:32px}
+        .details li {font-family:'Lucida Console','Courier New',monospace;font-size:12px;padding:.25em 0;color:#e7583f;break-inside:avoid}
         .details code {color:#e8e8e8}
+        @media (max-width:600px){.details ul.cols-2,.details ul.cols-3{columns:1}}
     </style>
 </head>
 <body>
@@ -45,7 +48,7 @@
         {{- if .AvailableGroups }}
         <div class="details">
             <p class="section-title">Available groups:</p>
-            <ul>
+            <ul class="{{ if gt (len .AvailableGroups) 20 }}cols-3{{ else if gt (len .AvailableGroups) 10 }}cols-2{{ end }}">
                 {{- range $i, $group := .AvailableGroups }}
                 <li><code>{{ $group }}</code></li>
                 {{- end }}
@@ -55,7 +58,7 @@
         {{- if .AvailableThemes }}
         <div class="details">
             <p class="section-title">Available themes:</p>
-            <ul>
+            <ul class="{{ if gt (len .AvailableThemes) 20 }}cols-3{{ else if gt (len .AvailableThemes) 10 }}cols-2{{ end }}">
                 {{- range $i, $theme := .AvailableThemes }}
                 <li><code>{{ $theme }}</code></li>
                 {{- end }}

@@ -23,8 +23,8 @@
         }
 
         .card {
-            max-width: 620px;
-            padding: 48px;
+            max-width: 720px;
+            padding: 48px 24px;
             text-align: center;
         }
 
@@ -55,8 +55,17 @@
             margin: 0 0 1.5em;
         }
 
+        .detail code {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Lucida Console', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
         .suggestions {
-            margin: 0;
+            margin: 0 auto;
             padding: 0 0 0 1.5em;
             list-style: disc;
             display: inline-block;
@@ -65,12 +74,29 @@
             font-size: 13px;
         }
 
+        .suggestions.cols-2 {
+            columns: 2;
+            column-gap: 36px;
+        }
+
+        .suggestions.cols-3 {
+            columns: 3;
+            column-gap: 32px;
+        }
+
         .suggestions li {
             padding: .3em 0;
+            break-inside: avoid;
         }
 
         .suggestions code {
             color: #e8e8e8;
+        }
+
+        @media (max-width: 600px) {
+            .suggestions.cols-2, .suggestions.cols-3 {
+                columns: 1;
+            }
         }
     </style>
 </head>
@@ -91,7 +117,7 @@
         {{- end }}
         {{- if .AvailableGroups }}
         <p class="detail">Available groups:</p>
-        <ul class="suggestions">
+        <ul class="suggestions {{ if gt (len .AvailableGroups) 20 }}cols-3{{ else if gt (len .AvailableGroups) 10 }}cols-2{{ end }}">
             {{- range $i, $group := .AvailableGroups }}
             <li><code>{{ $group }}</code></li>
             {{- end }}
@@ -99,7 +125,7 @@
         {{- end }}
         {{- if .AvailableThemes }}
         <p class="detail">Available themes:</p>
-        <ul class="suggestions">
+        <ul class="suggestions {{ if gt (len .AvailableThemes) 20 }}cols-3{{ else if gt (len .AvailableThemes) 10 }}cols-2{{ end }}">
             {{- range $i, $theme := .AvailableThemes }}
             <li><code>{{ $theme }}</code></li>
             {{- end }}
